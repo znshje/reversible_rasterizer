@@ -27,7 +27,7 @@ int Renderer::init_gl_wnd_program() {
     }
 
     // 3. 使用 GLAD2 加载 OpenGL 函数
-    if (!gladLoadGL((GLADloadfunc) OSMesaGetProcAddress)) {
+    if (!gladLoadGLLoader((GLADloadproc) OSMesaGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
