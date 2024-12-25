@@ -69,8 +69,11 @@ Shader::Shader() {
                                "    color = vec4(result, 1.0f);\n"
                                "\n"
                                "//    color = vec4(TriangleId / 206518.f, 0, 0, 1.0f);\n"
-                               "\n"
-                               "    fragmentID = TriangleId;\n"
+                               "    if (dot(norm, viewDir) > 0) {\n"
+                               "        fragmentID = TriangleId;\n"
+                               "    } else {\n"
+                               "        fragmentID = 0;\n"
+                               "    }"
                                "}";
 
     const GLchar *vShaderCode = vertexCode.c_str();

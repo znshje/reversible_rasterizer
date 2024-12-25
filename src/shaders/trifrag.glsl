@@ -38,7 +38,15 @@ void main()
     vec3 result = (ambient + diffuse + specular) * objectColor;
     color = vec4(result, 1.0f);
 
+    // Cull backface
+    if (dot(norm, viewDir) > 0) {
+        fragmentID = TriangleId;
+    } else {
+        fragmentID = -1;
+    }
+
+
 //    color = vec4(TriangleId / 206518.f, 0, 0, 1.0f);
 
-    fragmentID = TriangleId;
+//    fragmentID = TriangleId;
 }

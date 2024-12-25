@@ -4,8 +4,8 @@
 //#include "src/renderer.h"
 //#endif
 #include "api.h"
-#include "src/model_loader.h"
-#include "src/mesh.hpp"
+#include "model_loader.h"
+#include "mesh.hpp"
 //#include "src/shader.h"
 
 int main(int argc, char** argv) {

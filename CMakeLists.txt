@@ -36,7 +36,7 @@ if (NOT BUILD_OFFSCREEN_VERSION)
 endif ()
 
 # GLAD 2
-add_library(glad dep/glad/src/gl.c dep/glad/include/glad/gl.h)
+add_library(glad dep/glad/src/gl.c dep/glad/include/glad/glad.h)
 include_directories(dep/glad/include)
 target_include_directories(glad PUBLIC dep/glad/include)
 target_compile_options(glad PUBLIC "-fPIC")

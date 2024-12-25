@@ -24,13 +24,6 @@ std::vector<std::vector<int>> render(Mesh mesh, CameraConfig config) {
             config.near,
             config.far
     );
-//    std::cout << "width: " << config.width << std::endl;
-//    std::cout << "height: " << config.height << std::endl;
-//    std::cout << "R: " << config.R[0] << ", " << config.R[1] << ", " << config.R[2] << std::endl;
-//    std::cout << "T: " << config.T[0] << ", " << config.T[1] << ", " << config.T[2] << std::endl;
-//    std::cout << "zoom: " << config.zoom << std::endl;
-//    std::cout << "near: " << config.near << std::endl;
-//    std::cout << "far: " << config.far << std::endl;
     mesh.transform_center();
 
     renderer->init_scene();

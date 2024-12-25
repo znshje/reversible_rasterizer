@@ -6,7 +6,7 @@
 #define REVERSIBLE_RASTERIZER_GLSPEC_H
 
 #ifdef USE_OFFSCREEN_RENDERER
-#include <glad/gl.h>
+#include <glad/glad.h>
 #ifndef APIENTRY
 #define APIENTRY GLAPIENTRY
 #endif

@@ -6,7 +6,7 @@
 #include <fstream>
 
 ModelLoader::ModelLoader(const std::string &model_path) : model_path(model_path) {
-    g_scene = importer.ReadFile(model_path, aiProcess_CalcTangentSpace | aiProcess_GenNormals);
+    g_scene = importer.ReadFile(model_path, aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
 }
 
 ModelLoader::~ModelLoader() {

@@ -14,6 +14,9 @@
 #include <string>
 #include <iostream>
 #include <Eigen/Core>
+#include <fstream>
+#include <assimp/scene.h>
+#include <assimp/Exporter.hpp>
 
 struct Vertex {
     glm::vec3 position;
@@ -38,11 +41,17 @@ public:
     std::vector<Vertex> vertices;
     std::vector<TriVertex> triVertices;
     std::vector<GLuint> indices;
+    Eigen::MatrixX3d mVertices;
+    Eigen::MatrixX3d mNormals;
+    Eigen::MatrixX4d mVertexColors;
+    Eigen::MatrixX3i mFaces;
     GLuint idTexture, colorTexture;
 
-    Mesh(std::vector<std::vector<double>> v, std::vector<std::vector<double>> n, std::vector<std::vector<uint32_t>> f) : Mesh(std::move(v), std::move(n), std::move(f), {}) {}
+    Mesh(std::vector<std::vector<double>> v, std::vector<std::vector<double>> n, std::vector<std::vector<uint32_t>> f)
+            : Mesh(std::move(v), std::move(n), std::move(f), {}) {}
 
-    Mesh(std::vector<std::vector<double>> v, std::vector<std::vector<double>> n, std::vector<std::vector<uint32_t>> f, std::vector<std::vector<float>> vc) {
+    Mesh(std::vector<std::vector<double>> v, std::vector<std::vector<double>> n, std::vector<std::vector<uint32_t>> f,
+         std::vector<std::vector<float>> vc) {
         std::cout << "Creating mesh with " << v.size() << " vertices and " << f.size() << " faces" << std::endl;
         mVertices.resize((long) v.size(), 3);
         mNormals.resize((long) v.size(), 3);
@@ -103,11 +112,11 @@ public:
         // 设置顶点的纹理坐标
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(TriVertex),
-                              (GLvoid*)offsetof(TriVertex, color));
+                              (GLvoid *) offsetof(TriVertex, color));
 
         // 设置顶点的ID纹理坐标
         glEnableVertexAttribArray(3);
-        glVertexAttribIPointer(3, 1, GL_INT, sizeof(TriVertex), (GLvoid*)offsetof(TriVertex, triangleId));
+        glVertexAttribIPointer(3, 1, GL_INT, sizeof(TriVertex), (GLvoid *) offsetof(TriVertex, triangleId));
 
         glBindVertexArray(0);
 
@@ -133,7 +142,7 @@ public:
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, idTexture, 0);
 
         // 设置渲染到多个目标
-        GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+        GLuint attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
         glDrawBuffers(2, attachments);
 
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -168,7 +177,7 @@ public:
         // 设置顶点的纹理坐标
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (GLvoid*)offsetof(Vertex, color));
+                              (GLvoid *) offsetof(Vertex, color));
 
         glBindVertexArray(0);
     }
@@ -221,11 +230,70 @@ public:
         }
     }
 
+    long nFaces() {
+        return mFaces.rows();
+    }
+
+    void set_faces(std::vector<std::vector<uint32_t>> f) {
+        mFaces.resize((long) f.size(), 3);
+        for (int i = 0; i < f.size(); i++) {
+            for (int j = 0; j < 3; j++) {
+                mFaces(i, j) = (int) f[i][j];
+            }
+        }
+    }
+
+    void export_to(const std::string out_path) {
+        aiScene scene;
+
+        scene.mRootNode = new aiNode();
+
+        scene.mMaterials = new aiMaterial *[1];
+        scene.mMaterials[0] = nullptr;
+        scene.mNumMaterials = 1;
+
+        scene.mMaterials[0] = new aiMaterial();
+        scene.mMeshes = new aiMesh *[1];
+        scene.mMeshes[0] = nullptr;
+        scene.mNumMeshes = 1;
+
+        scene.mMeshes[0] = new aiMesh();
+        scene.mMeshes[0]->mMaterialIndex = 0;
+
+        scene.mRootNode->mMeshes = new unsigned int[1];
+        scene.mRootNode->mMeshes[0] = 0;
+        scene.mRootNode->mNumMeshes = 1;
+
+
+        auto pMesh = scene.mMeshes[0];
+
+        pMesh->mVertices = new aiVector3D[mVertices.rows()];
+        pMesh->mNumVertices = mVertices.rows();
+
+        for (int i = 0; i < mVertices.rows(); i++) {
+            pMesh->mVertices[i] = aiVector3D(mVertices(i, 0), mVertices(i, 1), mVertices(i, 2));
+        }
+
+        pMesh->mFaces = new aiFace[mFaces.rows()];
+        pMesh->mNumFaces = mFaces.rows();
+
+        for (int i = 0; i < mFaces.rows(); i++) {
+
+            aiFace &face = pMesh->mFaces[i];
+
+            face.mIndices = new unsigned int[3];
+            face.mNumIndices = 3;
+
+            face.mIndices[0] = mFaces(i, 0);
+            face.mIndices[1] = mFaces(i, 1);
+            face.mIndices[2] = mFaces(i, 2);
+        }
+
+        Assimp::Exporter exporter;
+        exporter.Export(&scene, out_path.substr(out_path.find_last_of('.') + 1), out_path);
+    }
+
 private:
-    Eigen::MatrixX3d mVertices;
-    Eigen::MatrixX3d mNormals;
-    Eigen::MatrixX4d mVertexColors;
-    Eigen::MatrixX3i mFaces;
     GLuint VAO, VBO, EBO, FBO;
 
     void clear_cache() {
@@ -242,7 +310,8 @@ private:
             for (int i = 0; i < mVertices.rows(); i++) {
                 vertices[i].position = {mVertices(i, 0), mVertices(i, 1), mVertices(i, 2)};
                 vertices[i].normal = {mNormals(i, 0), mNormals(i, 1), mNormals(i, 2)};
-                vertices[i].color = {mVertexColors(i, 0), mVertexColors(i, 1), mVertexColors(i, 2), mVertexColors(i, 3)};
+                vertices[i].color = {mVertexColors(i, 0), mVertexColors(i, 1), mVertexColors(i, 2),
+                                     mVertexColors(i, 3)};
             }
 
             for (int i = 0; i < mFaces.rows(); i++) {
@@ -254,12 +323,36 @@ private:
 
         triVertices.resize(mFaces.size());
         for (int i = 0; i < mFaces.rows(); i++) {
+            int dbgFlag = 0;
             for (int j = 0; j < 3; j++) {
                 int vi = mFaces(i, j);
                 triVertices[i * 3 + j].position = {mVertices(vi, 0), mVertices(vi, 1), mVertices(vi, 2)};
                 triVertices[i * 3 + j].normal = {mNormals(vi, 0), mNormals(vi, 1), mNormals(vi, 2)};
-                triVertices[i * 3 + j].color = {mVertexColors(vi, 0), mVertexColors(vi, 1), mVertexColors(vi, 2), mVertexColors(vi, 3)};
+                triVertices[i * 3 + j].color = {mVertexColors(vi, 0), mVertexColors(vi, 1), mVertexColors(vi, 2),
+                                                mVertexColors(vi, 3)};
                 triVertices[i * 3 + j].triangleId = i + 1;
+
+                if (abs(triVertices[i * 3 + j].position.x - 1.169622) < 1e-5 &&
+                    abs(triVertices[i * 3 + j].position.y - -19.627628) < 1e-5 &&
+                    abs(triVertices[i * 3 + j].position.z - -86.597298) < 1e-5) {
+                    dbgFlag++;
+                }
+                if (abs(triVertices[i * 3 + j].position.x - 1.292888) < 1e-5 &&
+                    abs(triVertices[i * 3 + j].position.y - -19.627476) < 1e-5 &&
+                    abs(triVertices[i * 3 + j].position.z - -86.359192) < 1e-5) {
+                    dbgFlag++;
+                }
+                if (abs(triVertices[i * 3 + j].position.x - 1.074601) < 1e-5 &&
+                    abs(triVertices[i * 3 + j].position.y - -19.610437) < 1e-5 &&
+                    abs(triVertices[i * 3 + j].position.z - -86.232155) < 1e-5) {
+                    dbgFlag++;
+                }
+            }
+            if (dbgFlag > 0) {
+                std::cout << "face index: " << i << std::endl;
+                triVertices[i * 3].color = {0.0f, 1.0f, 1.0f, 1.0f};
+                triVertices[i * 3 + 1].color = {0.0f, 1.0f, 1.0f, 1.0f};
+                triVertices[i * 3 + 2].color = {0.0f, 1.0f, 1.0f, 1.0f};
             }
         }
     }
