@@ -32,6 +32,13 @@ public:
     Renderer() : width(WIDTH), height(HEIGHT) {
     }
 
+    ~Renderer() {
+        if (buffer) {
+            std::cout << "Delete:" << buffer << std::endl;
+            delete[] buffer;
+        }
+    }
+
     GLubyte* buffer;
 private:
     int width, height;

@@ -71,7 +71,7 @@ if (BUILD_PYTHON_LIB)
     FetchContent_Declare(pybind11 URL https://github.com/pybind/pybind11/archive/refs/tags/v2.13.6.tar.gz)
     FetchContent_MakeAvailable(pybind11)
     add_compile_definitions(FOUND_PYBIND11)
-    pybind11_add_module(reversible_rasterizer SHARED
+    pybind11_add_module(librevras SHARED
             src/api.h
             src/api.cpp
             src/glspec.h
@@ -85,14 +85,14 @@ if (BUILD_PYTHON_LIB)
             src/shader.h
             src/shader.cpp
     )
-    target_link_libraries(reversible_rasterizer PUBLIC
+    target_link_libraries(librevras PUBLIC
             ${OPENGL_LIBRARIES}
             ${CUSTOM_GLFW_TARGET_LINK}
             glad
             Eigen3::Eigen
             assimp
             pybind11::module)
-    target_compile_definitions(reversible_rasterizer PUBLIC FOUND_PYBIND11)
+    target_compile_definitions(librevras PUBLIC FOUND_PYBIND11)
 endif ()
 
 if (BUILD_EXECUTABLES)

@@ -5,9 +5,19 @@
 #ifndef REVERSIBLE_RASTERIZER_API_H
 #define REVERSIBLE_RASTERIZER_API_H
 
+#ifdef USE_OFFSCREEN_RENDERER
+#include "offscreen_renderer.h"
+#else
+#include "renderer.h"
+#endif
+
 #include "config.h"
 #include "mesh.hpp"
 
-std::vector<std::vector<int>> render(Mesh mesh, CameraConfig config);
+Renderer* init();
+
+std::vector<std::vector<int>> render(Renderer* renderer, Mesh mesh, CameraConfig config);
+
+void end(Renderer* renderer);
 
 #endif //REVERSIBLE_RASTERIZER_API_H

@@ -38,7 +38,7 @@ int Renderer::init_gl_wnd_program() {
 }
 
 void Renderer::destroy() {
-    delete[] buffer;
+
 }
 
 void Renderer::init_scene() {

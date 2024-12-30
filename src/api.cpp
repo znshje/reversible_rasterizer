@@ -2,18 +2,25 @@
 // Created by zsj on 24-11-26.
 //
 #include "api.h"
-#ifdef USE_OFFSCREEN_RENDERER
-#include "offscreen_renderer.h"
-#else
-#include "renderer.h"
-#endif
 
-std::vector<std::vector<int>> render(Mesh mesh, CameraConfig config) {
+Renderer* init() {
     Renderer* renderer = new Renderer();
     if (renderer->init_gl_wnd_program() != 0) {
+        std::cout << "Renderer init failed" << std::endl;
         renderer->destroy();
-        free(renderer);
+        return nullptr;
     }
+    return renderer;
+}
+
+std::vector<std::vector<int>> render(Renderer* renderer, Mesh mesh, CameraConfig config) {
+//    Renderer renderer;
+//    if (renderer->init_gl_wnd_program() != 0) {
+//        std::cout << "Renderer init failed" << std::endl;
+//        renderer->destroy();
+////        delete renderer;
+//        return {};
+//    }
     Shader shader;
     renderer->set_width(config.width);
     renderer->set_height(config.height);
@@ -31,6 +38,11 @@ std::vector<std::vector<int>> render(Mesh mesh, CameraConfig config) {
     renderer->render_mesh(mesh, shader);
     std::vector<std::vector<int>> id_map = renderer->read_triangle_id(mesh);
     mesh.destroy();
-    renderer->destroy();
+//    renderer->destroy();
+//    delete renderer;
     return id_map;
+}
+
+void end(Renderer* renderer) {
+//    delete renderer;
 }

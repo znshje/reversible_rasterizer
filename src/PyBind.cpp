@@ -6,7 +6,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(reversible_rasterizer, m)
+PYBIND11_MODULE(librevras, m)
 {
     m.doc() = "Reverse the rasterizer process, find the triangle ID through pixel.";
 
@@ -24,9 +24,16 @@ PYBIND11_MODULE(reversible_rasterizer, m)
             .def(py::init<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>, std::vector<std::vector<float>>>())
             .def(py::init<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>>());
 
+    py::class_<Renderer>(m, "Renderer");
+
+    m.def("init", &init, "Terminate the renderer");
+
     m.def("render", &render, "Render and get pixel-triangle map",
+          py::arg("renderer"),
           py::arg("mesh"),
           py::arg("config"),
           py::return_value_policy::move);
+
+    m.def("end", &end, "Terminate the renderer", py::arg("renderer"));
 }
 #endif
