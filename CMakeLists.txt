@@ -6,7 +6,7 @@ include(FetchContent)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_FLAGS "-fpermissive -fPIC -fopenmp")
+set(CMAKE_CXX_FLAGS "-fpermissive -fPIC -fopenmp -w")
 SET(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 
 set(BUILD_EXECUTABLES OFF)
@@ -42,9 +42,6 @@ target_include_directories(glad PUBLIC dep/glad/include)
 target_compile_options(glad PUBLIC "-fPIC")
 set(CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -ldl")
 
-# Mesa
-include_directories(dep/mesa/include)
-
 # GLM
 add_subdirectory(dep/glm)
 include_directories(dep/glm)
@@ -59,9 +56,12 @@ include_directories(dep/assimp/include)
 include_directories(./src)
 
 if (BUILD_OFFSCREEN_VERSION)
+    find_package(OpenGL COMPONENTS EGL REQUIRED)
+    include_directories(${OPENGL_EGL_INCLUDE_DIR})
+
     add_compile_definitions(USE_OFFSCREEN_RENDERER)
     set(RENDERER_SOURCE src/offscreen_renderer.cpp)
-    set(CUSTOM_GLFW_TARGET_LINK "OSMesa")
+    set(CUSTOM_GLFW_TARGET_LINK ${OPENGL_egl_LIBRARY})
 else ()
     set(RENDERER_SOURCE src/renderer.cpp)
     set(CUSTOM_GLFW_TARGET_LINK "glfw")

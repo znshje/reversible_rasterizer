@@ -13,32 +13,89 @@
 #include <glm/gtc/type_ptr.hpp>
 
 int Renderer::init_gl_wnd_program() {
-    OSMesaContext context = OSMesaCreateContext(OSMESA_RGBA, NULL);
-    if (!context) {
-        std::cerr << "Failed to create OSMesa context" << std::endl;
+    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (display == EGL_NO_DISPLAY) {
+        std::cerr << "Failed to get EGL display" << std::endl;
         return -1;
     }
 
-    // 2. 创建一个帧缓冲区（PBuffer）
-    buffer = new GLubyte[WIDTH * HEIGHT * 4];  // RGBA buffer
-    if (!OSMesaMakeCurrent(context, buffer, GL_UNSIGNED_BYTE, WIDTH, HEIGHT)) {
-        std::cerr << "Failed to make OSMesa current" << std::endl;
+    EGLint major, minor;
+    if (!eglInitialize(display, &major, &minor)) {
+        std::cerr << "Failed to initialize EGL" << std::endl;
         return -1;
     }
 
-    // 3. 使用 GLAD2 加载 OpenGL 函数
-    if (!gladLoadGLLoader((GLADloadproc) OSMesaGetProcAddress)) {
+    // 选择 EGL 配置
+    const EGLint configAttribs[] = {
+            EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
+            EGL_RED_SIZE, 8,
+            EGL_GREEN_SIZE, 8,
+            EGL_BLUE_SIZE, 8,
+            EGL_ALPHA_SIZE, 8,
+            EGL_DEPTH_SIZE, 24,
+            EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+            EGL_NONE
+    };
+
+    EGLint numConfigs;
+    if (!eglChooseConfig(display, configAttribs, &config, 1, &numConfigs)) {
+        std::cerr << "Failed to choose EGL config" << std::endl;
+        return -1;
+    }
+
+    if (!eglBindAPI(EGL_OPENGL_API)) {
+        std::cerr << "Failed to bind OpenGL API" << std::endl;
+        return -1;
+    }
+
+    // 创建 PBuffer 表面
+    const EGLint surfaceAttribs[] = {
+            EGL_WIDTH, width,
+            EGL_HEIGHT, height,
+            EGL_NONE
+    };
+    surface = eglCreatePbufferSurface(display, config, surfaceAttribs);
+    if (surface == EGL_NO_SURFACE) {
+        std::cerr << "Failed to create EGL surface" << std::endl;
+        return -1;
+    }
+
+    // 创建 EGL 上下文
+    const EGLint contextAttribs[] = {
+            EGL_CONTEXT_CLIENT_VERSION, 2,
+            EGL_NONE
+    };
+    context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttribs);
+    if (context == EGL_NO_CONTEXT) {
+        std::cerr << "Failed to create EGL context" << std::endl;
+        return -1;
+    }
+
+    // 使上下文成为当前上下文
+    if (!eglMakeCurrent(display, surface, surface, context)) {
+        std::cerr << "Failed to make EGL context current" << std::endl;
+        return -1;
+    }
+
+    // 初始化 GLAD
+    if (!gladLoadGLLoader((GLADloadproc) eglGetProcAddress)) {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << std::endl;
     return 0;
 }
 
 void Renderer::destroy() {
-
+    if (display != EGL_NO_DISPLAY) {
+        if (context != EGL_NO_CONTEXT) {
+            eglDestroyContext(display, context);
+        }
+        if (surface != EGL_NO_SURFACE) {
+            eglDestroySurface(display, surface);
+        }
+        eglTerminate(display);
+    }
 }
 
 void Renderer::init_scene() {

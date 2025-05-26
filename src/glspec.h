@@ -10,7 +10,7 @@
 #ifndef APIENTRY
 #define APIENTRY GLAPIENTRY
 #endif
-#include <GL/osmesa.h>
+#include <EGL/egl.h>
 #else
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>

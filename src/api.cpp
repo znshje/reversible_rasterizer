@@ -14,13 +14,6 @@ Renderer* init() {
 }
 
 std::vector<std::vector<int>> render(Renderer* renderer, Mesh mesh, CameraConfig config) {
-//    Renderer renderer;
-//    if (renderer->init_gl_wnd_program() != 0) {
-//        std::cout << "Renderer init failed" << std::endl;
-//        renderer->destroy();
-////        delete renderer;
-//        return {};
-//    }
     Shader shader;
     renderer->set_width(config.width);
     renderer->set_height(config.height);

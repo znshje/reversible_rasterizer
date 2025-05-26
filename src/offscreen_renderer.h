@@ -47,6 +47,11 @@ private:
     std::vector<float> camera_rotate;
     std::vector<float> camera_translate;
     glm::mat4 proj;
+
+    EGLDisplay display;
+    EGLConfig config;
+    EGLSurface surface;
+    EGLContext context;
 };
 
 #endif
