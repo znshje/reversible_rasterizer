@@ -141,6 +141,11 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, idTexture, 0);
 
+        glGenRenderbuffers(1, &depthRBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRBO);
+
         // 设置渲染到多个目标
         GLuint attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
         glDrawBuffers(2, attachments);
@@ -151,45 +156,12 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void setup_mesh() {
-        glGenVertexArrays(1, &this->VAO);
-        glGenBuffers(1, &this->VBO);
-        glGenBuffers(1, &this->EBO);
-
-        glBindVertexArray(this->VAO);
-        glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-
-        glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex),
-                     &this->vertices[0], GL_STATIC_DRAW);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint),
-                     &this->indices[0], GL_STATIC_DRAW);
-
-        // 设置顶点坐标指针
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (GLvoid *) 0);
-        // 设置法线指针
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (GLvoid *) offsetof(Vertex, normal));
-        // 设置顶点的纹理坐标
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex),
-                              (GLvoid *) offsetof(Vertex, color));
-
-        glBindVertexArray(0);
-    }
-
-    void draw() {
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    }
-
     void tri_draw(int width, int height) {
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+        glClearColor(0, 0, 0, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, triVertices.size());
 
@@ -228,10 +200,13 @@ public:
         if (FBO) {
             glDeleteFramebuffers(1, &FBO);
         }
+        if (depthRBO) {
+            glDeleteRenderbuffers(1, &depthRBO);
+        }
     }
 
 private:
-    GLuint VAO, VBO, EBO, FBO;
+    GLuint VAO, VBO, EBO, FBO, depthRBO;
 
     void clear_cache() {
         vertices.clear();

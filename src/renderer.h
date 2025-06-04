@@ -19,6 +19,8 @@ public:
     int init_gl_wnd_program();
     void render_mesh(std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>);
     void render_mesh(Mesh, Shader shader);
+    void render_mesh_normal(Mesh);
+    void render_mesh_depth(Mesh);
     void init_scene();
     void destroy();
     void loop();
@@ -28,6 +30,7 @@ public:
     void set_camera(std::vector<float> r, std::vector<float> t, double zoom, double near, double far);
 
     std::vector<std::vector<int>> read_triangle_id(Mesh mesh);
+    std::vector<std::vector<std::vector<int>>> read_image(Mesh mesh);
 
     Renderer() : width(WIDTH), height(HEIGHT) {
         window = nullptr;

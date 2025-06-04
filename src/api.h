@@ -18,6 +18,10 @@ Renderer* init();
 
 std::vector<std::vector<int>> render(Renderer* renderer, Mesh mesh, CameraConfig config);
 
+std::vector<std::vector<std::vector<int>>> render_normal(Renderer* renderer, Mesh mesh, CameraConfig config);
+
+std::vector<std::vector<std::vector<int>>> render_depth(Renderer* renderer, Mesh mesh, CameraConfig config);
+
 void end(Renderer* renderer);
 
 #endif //REVERSIBLE_RASTERIZER_API_H

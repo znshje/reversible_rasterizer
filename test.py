@@ -1,7 +1,7 @@
 import trimesh
 from PIL import Image
 import numpy as np
-from build import reversible_rasterizer as rr
+from build import librevras as rr
 
 camera_config = rr.CameraConfig()
 camera_config.width = 1278
@@ -28,11 +28,20 @@ verts = np.concatenate(verts, 0)
 normals = np.concatenate(normals, 0)
 faces = np.concatenate(faces, 0)
 
+instance = rr.init()
 rrmesh = rr.Mesh(verts, normals, faces)
 print(rrmesh)
 
-id_map = np.array(rr.render(rrmesh, camera_config))
+id_map = np.array(rr.render(instance, rrmesh, camera_config))
 print(id_map.shape)
 id_map = (id_map.astype(np.float32) / np.max(id_map) * 255.0).astype(np.uint8)[:, :, None]
 id_map = np.repeat(id_map, 3, -1)
 Image.fromarray(id_map).save('id_map.png')
+
+id_map = np.array(rr.render_normal(instance, rrmesh, camera_config))
+print(id_map.shape)
+Image.fromarray(id_map.astype(np.uint8)).save('normal_map.png')
+
+id_map = np.array(rr.render_depth(instance, rrmesh, camera_config))
+print(id_map.shape)
+Image.fromarray(id_map.astype(np.uint8)).save('depth_map.png')

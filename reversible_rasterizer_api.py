@@ -63,6 +63,12 @@ class ReversibleRasterizer:
         self.id_map = np.array(rr.render(self.instance, self.mesh, self.camera_config))
         return self
 
+    def render_normal(self) -> np.ndarray:
+        return np.asarray(rr.render_normal(self.instance, self.mesh, self.camera_config)).astype(np.uint8)
+
+    def render_depth(self) -> np.ndarray:
+        return np.asarray(rr.render_depth(self.instance, self.mesh, self.camera_config)).astype(np.uint8)
+
     def clear_outliers(self, **kwargs) -> 'ReversibleRasterizer':
         id_map_flat = self.id_map.reshape(-1) - 1
         valid_mask = id_map_flat > -1

@@ -34,6 +34,18 @@ PYBIND11_MODULE(librevras, m)
           py::arg("config"),
           py::return_value_policy::move);
 
+    m.def("render_normal", &render_normal, "Render and get pixel-triangle map",
+          py::arg("renderer"),
+          py::arg("mesh"),
+          py::arg("config"),
+          py::return_value_policy::move);
+
+    m.def("render_depth", &render_depth, "Render and get pixel-triangle map",
+          py::arg("renderer"),
+          py::arg("mesh"),
+          py::arg("config"),
+          py::return_value_policy::move);
+
     m.def("end", &end, "Terminate the renderer", py::arg("renderer"));
 }
 #endif

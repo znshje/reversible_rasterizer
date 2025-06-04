@@ -101,13 +101,18 @@ void Renderer::destroy() {
 void Renderer::init_scene() {
     glViewport(0, 0, width, height);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
+    // 启用面剔除
+    glEnable(GL_CULL_FACE);
+    // 设置剔除背面，默认是 GL_BACK
+    glCullFace(GL_BACK);
+    // 设置正面的绕序，默认是 GL_CCW（逆时针）
+    glFrontFace(GL_CCW);
+
     glClearColor(0, 0, 0, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_DEPTH_TEST);
-
-    /* Swap front and back buffers */
-//    glfwSwapBuffers(window);
 }
 
 void Renderer::render_mesh(std::vector<std::vector<double>> vertices, std::vector<std::vector<uint32_t>> faces) {
@@ -187,7 +192,74 @@ void Renderer::render_mesh(Mesh mesh, Shader shader) {
     glClearColor(0, 0, 0, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     mesh.tri_draw(width, height);
-//    glfwSwapBuffers(window);
+}
+
+void Renderer::render_mesh_normal(Mesh mesh) {
+    Shader shader(1);
+    shader.Use();
+
+    glm::mat4 rot(1);
+    rot = glm::rotate(rot, glm::radians(camera_rotate[0]), glm::vec3(1, 0, 0));
+    rot = glm::rotate(rot, glm::radians(camera_rotate[1]), glm::vec3(0, 1, 0));
+    rot = glm::rotate(rot, glm::radians(camera_rotate[2]), glm::vec3(0, 0, 1));
+    rot = glm::inverse(rot);
+    glm::mat4 trans(1);
+    trans = glm::translate(trans, glm::vec3(-camera_translate[0], -camera_translate[1], -camera_translate[2]));
+    trans = rot * trans;
+
+    GLint modelLoc = glGetUniformLocation(shader.Program, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
+
+    GLint viewLoc = glGetUniformLocation(shader.Program, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+    GLint projLoc = glGetUniformLocation(shader.Program, "projection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+
+    glClearColor(0, 0, 0, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    mesh.tri_draw(width, height);
+}
+
+void Renderer::render_mesh_depth(Mesh mesh) {
+    Shader shader(2);
+    shader.Use();
+
+    glm::mat4 rot(1);
+    rot = glm::rotate(rot, glm::radians(camera_rotate[0]), glm::vec3(1, 0, 0));
+    rot = glm::rotate(rot, glm::radians(camera_rotate[1]), glm::vec3(0, 1, 0));
+    rot = glm::rotate(rot, glm::radians(camera_rotate[2]), glm::vec3(0, 0, 1));
+    rot = glm::inverse(rot);
+    glm::mat4 trans(1);
+    trans = glm::translate(trans, glm::vec3(-camera_translate[0], -camera_translate[1], -camera_translate[2]));
+    trans = rot * trans;
+
+    GLint modelLoc = glGetUniformLocation(shader.Program, "model");
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
+
+    GLint viewLoc = glGetUniformLocation(shader.Program, "view");
+    glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
+    GLint projLoc = glGetUniformLocation(shader.Program, "projection");
+    glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
+
+    float minDepth = FLT_MAX;
+    float maxDepth = -FLT_MAX;
+
+    for (const auto& vertex : mesh.vertices) {
+        glm::vec4 projPos = proj * trans * glm::vec4(vertex.position, 1.0f);
+        float viewDepth = projPos.z / projPos.w;
+        minDepth = glm::min(minDepth, viewDepth);
+        maxDepth = glm::max(maxDepth, viewDepth);
+    }
+
+    // 将 minDepth 和 maxDepth 设置到着色器中
+    GLint minDepthLoc = glGetUniformLocation(shader.Program, "minDepth");
+    GLint maxDepthLoc = glGetUniformLocation(shader.Program, "maxDepth");
+    glUniform1f(minDepthLoc, minDepth);
+    glUniform1f(maxDepthLoc, maxDepth);
+
+    mesh.tri_draw(width, height);
 }
 
 // 读取像素的三角形 ID
@@ -204,4 +276,22 @@ std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh mesh) {
     }
     glBindTexture(GL_TEXTURE_2D, 0);
     return triangleIDs;
+}
+
+std::vector<std::vector<std::vector<int>>> Renderer::read_image(Mesh mesh) {
+    std::vector<std::vector<std::vector<int>>> image(height, std::vector<std::vector<int>>(width, std::vector<int>(3)));
+    GLubyte pixelData[width * height * 4];
+    // 读取 RGB 数据
+    glBindTexture(GL_TEXTURE_2D, mesh.colorTexture);
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            for (int c = 0; c < 3; ++c) {
+                // OpenGL 的原点在左下角，需要翻转 Y 轴存储数据
+                image[height - 1 - y][x][c] = pixelData[(y * width + x) * 4 + c];
+            }
+        }
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+    return image;
 }
