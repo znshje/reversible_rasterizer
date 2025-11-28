@@ -13,7 +13,7 @@ Renderer* init() {
     return renderer;
 }
 
-std::vector<std::vector<int>> render(Renderer* renderer, Mesh mesh, CameraConfig config) {
+std::vector<std::vector<int>> render_id_map(Renderer* renderer, Mesh mesh, CameraConfig config) {
     Shader shader(0);
     renderer->set_width(config.width);
     renderer->set_height(config.height);
@@ -34,6 +34,27 @@ std::vector<std::vector<int>> render(Renderer* renderer, Mesh mesh, CameraConfig
 //    renderer->destroy();
 //    delete renderer;
     return id_map;
+}
+
+std::vector<std::vector<std::vector<int>>> render(Renderer* renderer, Mesh mesh, CameraConfig config) {
+    Shader shader(0);
+    renderer->set_width(config.width);
+    renderer->set_height(config.height);
+    renderer->set_camera(
+            config.R,
+            config.T,
+            config.zoom,
+            config.near,
+            config.far
+    );
+    mesh.transform_center();
+
+    renderer->init_scene();
+    mesh.setup_tri_mesh(config.width, config.height);
+    renderer->render_mesh(mesh, shader);
+    std::vector<std::vector<std::vector<int>>> img = renderer->read_image(mesh);
+    mesh.destroy();
+    return img;
 }
 
 std::vector<std::vector<std::vector<int>>> render_normal(Renderer* renderer, Mesh mesh, CameraConfig config) {

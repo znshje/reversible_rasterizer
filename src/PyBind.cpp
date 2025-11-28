@@ -28,6 +28,12 @@ PYBIND11_MODULE(librevras, m)
 
     m.def("init", &init, "Terminate the renderer");
 
+    m.def("render_id_map", &render_id_map, "Render and get pixel-triangle map",
+          py::arg("renderer"),
+          py::arg("mesh"),
+          py::arg("config"),
+          py::return_value_policy::move);
+
     m.def("render", &render, "Render and get pixel-triangle map",
           py::arg("renderer"),
           py::arg("mesh"),

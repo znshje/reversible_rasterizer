@@ -93,6 +93,11 @@ if (BUILD_PYTHON_LIB)
             assimp
             pybind11::module)
     target_compile_definitions(librevras PUBLIC FOUND_PYBIND11)
+    set_target_properties(librevras PROPERTIES
+            BUILD_WITH_INSTALL_RPATH ON
+            INSTALL_RPATH "\$ORIGIN"
+            SKIP_BUILD_RPATH OFF
+            )
 endif ()
 
 if (BUILD_EXECUTABLES)

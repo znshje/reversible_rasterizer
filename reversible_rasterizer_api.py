@@ -56,12 +56,15 @@ class ReversibleRasterizer:
         self.mesh = rr.Mesh(vertices, normals, faces)
         return self
 
-    def render(self) -> 'ReversibleRasterizer':
+    def render_id_map(self) -> 'ReversibleRasterizer':
         """
         Render the mesh using the current camera configuration.
         """
-        self.id_map = np.array(rr.render(self.instance, self.mesh, self.camera_config))
+        self.id_map = np.array(rr.render_id_map(self.instance, self.mesh, self.camera_config))
         return self
+
+    def render(self) -> np.ndarray:
+        return np.asarray(rr.render(self.instance, self.mesh, self.camera_config)).astype(np.uint8)
 
     def render_normal(self) -> np.ndarray:
         return np.asarray(rr.render_normal(self.instance, self.mesh, self.camera_config)).astype(np.uint8)

@@ -183,7 +183,7 @@ void Renderer::render_mesh(Mesh mesh, Shader shader) {
     GLint projLoc = glGetUniformLocation(shader.Program, "projection");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
 
-    glm::vec3 lightPos = {0, 0, 100.f};
+    glm::vec3 lightPos = {camera_translate[0], camera_translate[1], camera_translate[2]};
     glUniform3f(glGetUniformLocation(shader.Program, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
     glUniform3f(glGetUniformLocation(shader.Program, "lightColor"), 1.0, 1.0, 1.0);
     glUniform3f(glGetUniformLocation(shader.Program, "viewPos"), camera_translate[0], camera_translate[1],
