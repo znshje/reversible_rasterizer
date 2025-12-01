@@ -10,7 +10,10 @@
 #ifndef APIENTRY
 #define APIENTRY GLAPIENTRY
 #endif
+#define EGL_EGLEXT_PROTOTYPES
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
+
 #else
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>

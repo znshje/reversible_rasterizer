@@ -13,11 +13,40 @@
 #include <glm/gtc/type_ptr.hpp>
 
 int Renderer::init_gl_wnd_program() {
-    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-    if (display == EGL_NO_DISPLAY) {
-        std::cerr << "Failed to get EGL display" << std::endl;
+    auto eglQueryDevicesEXT = reinterpret_cast<PFNEGLQUERYDEVICESEXTPROC>(
+            eglGetProcAddress("eglQueryDevicesEXT"));
+    auto eglGetPlatformDisplayEXT = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(
+            eglGetProcAddress("eglGetPlatformDisplayEXT"));
+
+    if (!eglQueryDevicesEXT || !eglGetPlatformDisplayEXT) {
+        std::cerr << "EGL_EXT_device_base / EGL_EXT_platform_base not supported" << std::endl;
         return -1;
     }
+
+    EGLDeviceEXT devices[8];
+    EGLint numDevices = 0;
+
+    if (!eglQueryDevicesEXT(8, devices, &numDevices) || numDevices == 0) {
+        std::cerr << "No EGLDevice found" << std::endl;
+        return -1;
+    }
+
+    // 这里简单起见选第一个 GPU，你也可以根据需要挑其它 device
+    EGLDeviceEXT device = devices[0];
+
+    display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT,
+                                       device,
+                                       nullptr);  // 一般 attrs 为空即可
+    if (display == EGL_NO_DISPLAY) {
+        std::cerr << "Failed to get EGL display from EGLDevice" << std::endl;
+        return -1;
+    }
+
+//    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+//    if (display == EGL_NO_DISPLAY) {
+//        std::cerr << "Failed to get EGL display" << std::endl;
+//        return -1;
+//    }
 
     EGLint major, minor;
     if (!eglInitialize(display, &major, &minor)) {
