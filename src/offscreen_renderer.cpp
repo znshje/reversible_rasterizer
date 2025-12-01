@@ -105,9 +105,10 @@ void Renderer::init_scene() {
     glDepthFunc(GL_LESS);
 
     // 启用面剔除
-    glEnable(GL_CULL_FACE);
+//    glEnable(GL_CULL_FACE);
     // 设置剔除背面，默认是 GL_BACK
-    glCullFace(GL_BACK);
+//    glCullFace(GL_BACK);
+    glDisable(GL_CULL_FACE);
     // 设置正面的绕序，默认是 GL_CCW（逆时针）
     glFrontFace(GL_CCW);
 

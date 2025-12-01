@@ -8,6 +8,10 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
 
+uniform float uAmbientStrength  = 0.3f;
+uniform float uDiffuseStrength  = 0.5f;
+uniform float uSpecularStrength = 0.2f;
+
 layout(location = 0) out vec4 color;
 layout(location = 1) out int fragmentID; // 输出到颜色附件的 ID
 
@@ -18,35 +22,29 @@ void main()
     vec3 normNeg = -1 * norm;
 
     // Ambient
-    float ambientStrength = 0.1f;
-    vec3 ambient = ambientStrength * lightColor;
+    vec3 ambient = uAmbientStrength * lightColor;
 
     // Diffuse
     vec3 lightDir = normalize(lightPos - FragPos);
     float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor + max(dot(normNeg, lightDir), 0.0) * lightColor;
+    vec3 diffuse = uDiffuseStrength * diff * lightColor
+                 + uDiffuseStrength * max(dot(normNeg, lightDir), 0.0) * lightColor;
 
     // Specular
-    float specularStrength = 0.5f;
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
     vec3 reflectNegDir = reflect(-lightDir, normNeg);
     float specNeg = pow(max(dot(viewDir, reflectNegDir), 0.0), 32);
-    vec3 specular = specularStrength * spec * lightColor + specularStrength * specNeg * lightColor;
+    vec3 specular = uSpecularStrength * spec * lightColor
+                  + uSpecularStrength * specNeg * lightColor;
 
     vec3 result = (ambient + diffuse + specular) * objectColor;
     color = vec4(result, 1.0f);
 
-    // Cull backface
-    if (dot(norm, viewDir) > 0) {
-        fragmentID = TriangleId;
-    } else {
+    fragmentID = TriangleId;
+    if (!gl_FrontFacing) {
         fragmentID = -1;
+        color = vec4(0.15, 0.15, 0.15, 1.0f);
     }
-
-
-//    color = vec4(TriangleId / 206518.f, 0, 0, 1.0f);
-
-//    fragmentID = TriangleId;
 }

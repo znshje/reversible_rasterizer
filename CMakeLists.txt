@@ -67,7 +67,25 @@ else ()
     set(CUSTOM_GLFW_TARGET_LINK "glfw")
 endif ()
 
+set(GLSL_DIR ${CMAKE_SOURCE_DIR}/src/shaders)
+set(EMBED_OUTPUT_DIR ${CMAKE_BINARY_DIR}/generated_shaders)
+set(EMBED_STAMP_FILE ${EMBED_OUTPUT_DIR}/.shaders_embedded.stamp)
+add_custom_command(
+        OUTPUT ${EMBED_STAMP_FILE}
+        COMMAND ${CMAKE_COMMAND}
+        -DGLSL_DIR=${GLSL_DIR}
+        -DOUTPUT_DIR=${EMBED_OUTPUT_DIR}
+        -DSTAMP_FILE=${EMBED_STAMP_FILE}
+        -P ${CMAKE_SOURCE_DIR}/cmake/embed_glsl.cmake
+        DEPENDS
+        ${CMAKE_SOURCE_DIR}/cmake/embed_glsl.cmake
+        COMMENT "Embedding all GLSL shaders under ${GLSL_DIR}"
+        VERBATIM
+)
+add_custom_target(EmbedShaders ALL DEPENDS ${EMBED_STAMP_FILE})
+
 if (BUILD_PYTHON_LIB)
+    find_package(Python)
     FetchContent_Declare(pybind11 URL https://github.com/pybind/pybind11/archive/refs/tags/v2.13.6.tar.gz)
     FetchContent_MakeAvailable(pybind11)
     add_compile_definitions(FOUND_PYBIND11)
@@ -85,6 +103,8 @@ if (BUILD_PYTHON_LIB)
             src/shader.h
             src/shader.cpp
     )
+    add_dependencies(librevras EmbedShaders)
+    target_include_directories(librevras PRIVATE ${EMBED_OUTPUT_DIR})
     target_link_libraries(librevras PUBLIC
             ${OPENGL_LIBRARIES}
             ${CUSTOM_GLFW_TARGET_LINK}
@@ -114,6 +134,8 @@ if (BUILD_EXECUTABLES)
             src/shader.h
             src/shader.cpp
     )
+    add_dependencies(reversible_rasterizer_exe EmbedShaders)
+    target_include_directories(reversible_rasterizer_exe PRIVATE ${EMBED_OUTPUT_DIR})
     target_link_libraries(reversible_rasterizer_exe
             ${OPENGL_LIBRARIES}
             ${CUSTOM_GLFW_TARGET_LINK}

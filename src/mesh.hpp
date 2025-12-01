@@ -159,8 +159,11 @@ public:
     void tri_draw(int width, int height) {
         glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
-        glClearColor(0, 0, 0, 1.0f);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 清 COLOR_ATTACHMENT1（R32I）为 0
+        const GLint clearId[1] = {-1};
+        glClearBufferiv(GL_COLOR, 1, clearId);         // 1 对应 COLOR_ATTACHMENT1
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, triVertices.size());
