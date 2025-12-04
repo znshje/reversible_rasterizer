@@ -27,4 +27,13 @@ struct CameraConfig {
     }
 };
 
+struct RenderConfig {
+    bool vertexColors = false;
+    std::vector<float> backgroundColor = {1.f, 1.f, 1.f};
+    std::vector<float> vertexColor = {0.8f, 0.8f, 0.8f};
+    float ambientStrength  = 0.3f;
+    float diffuseStrength  = 0.5f;
+    float specularStrength = 0.2f;
+};
+
 #endif //REVERSIBLE_RASTERIZER_CONFIG_H

@@ -11,6 +11,7 @@ class ReversibleRasterizer:
     def __init__(self):
         self.instance = rr.init()
         self.camera_config = rr.CameraConfig()
+        self.render_config = rr.RenderConfig()
         self.mesh = None
         self.vertices = None
         self.faces = None
@@ -64,13 +65,13 @@ class ReversibleRasterizer:
         return self
 
     def render(self) -> np.ndarray:
-        return np.asarray(rr.render(self.instance, self.mesh, self.camera_config)).astype(np.uint8)
+        return np.asarray(rr.render(self.instance, self.mesh, self.camera_config, self.render_config)).astype(np.uint8)
 
     def render_normal(self) -> np.ndarray:
-        return np.asarray(rr.render_normal(self.instance, self.mesh, self.camera_config)).astype(np.uint8)
+        return np.asarray(rr.render_normal(self.instance, self.mesh, self.camera_config, self.render_config)).astype(np.uint8)
 
     def render_depth(self) -> np.ndarray:
-        return np.asarray(rr.render_depth(self.instance, self.mesh, self.camera_config)).astype(np.uint8)
+        return np.asarray(rr.render_depth(self.instance, self.mesh, self.camera_config, self.render_config)).astype(np.uint8)
 
     def clear_outliers(self, **kwargs) -> 'ReversibleRasterizer':
         id_map_flat = self.id_map.reshape(-1) - 1

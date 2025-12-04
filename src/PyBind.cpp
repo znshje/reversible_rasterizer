@@ -18,7 +18,16 @@ PYBIND11_MODULE(librevras, m)
             .def_readwrite("T", &CameraConfig::T)
             .def_readwrite("zoom", &CameraConfig::zoom)
             .def_readwrite("near", &CameraConfig::near)
-            .def_readwrite("far", &CameraConfig::far);
+      .def_readwrite("far", &CameraConfig::far);
+
+      py::class_<RenderConfig>(m, "RenderConfig")
+              .def(py::init())
+              .def_readwrite("vertexColors", &RenderConfig::vertexColors)
+              .def_readwrite("vertexColor", &RenderConfig::vertexColor)
+              .def_readwrite("backgroundColor", &RenderConfig::backgroundColor)
+              .def_readwrite("ambientStrength", &RenderConfig::ambientStrength)
+              .def_readwrite("diffuseStrength", &RenderConfig::diffuseStrength)
+              .def_readwrite("specularStrength", &RenderConfig::specularStrength);
 
     py::class_<Mesh>(m, "Mesh")
             .def(py::init<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>, std::vector<std::vector<float>>>())
@@ -32,24 +41,28 @@ PYBIND11_MODULE(librevras, m)
           py::arg("renderer"),
           py::arg("mesh"),
           py::arg("config"),
+          py::arg("render_config"),
           py::return_value_policy::move);
 
     m.def("render", &render, "Render and get pixel-triangle map",
           py::arg("renderer"),
           py::arg("mesh"),
           py::arg("config"),
+          py::arg("render_config"),
           py::return_value_policy::move);
 
     m.def("render_normal", &render_normal, "Render and get pixel-triangle map",
           py::arg("renderer"),
           py::arg("mesh"),
           py::arg("config"),
+          py::arg("render_config"),
           py::return_value_policy::move);
 
     m.def("render_depth", &render_depth, "Render and get pixel-triangle map",
           py::arg("renderer"),
           py::arg("mesh"),
           py::arg("config"),
+          py::arg("render_config"),
           py::return_value_policy::move);
 
     m.def("end", &end, "Terminate the renderer", py::arg("renderer"));

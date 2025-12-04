@@ -17,11 +17,11 @@
 class Renderer {
 public:
     int init_gl_wnd_program();
-    void render_mesh(std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>);
-    void render_mesh(Mesh, Shader shader);
-    void render_mesh_normal(Mesh);
-    void render_mesh_depth(Mesh);
-    void init_scene();
+    void render_mesh(std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>, RenderConfig render_config);
+    void render_mesh(Mesh, Shader shader, RenderConfig render_config);
+    void render_mesh_normal(Mesh mesh, RenderConfig render_config);
+    void render_mesh_depth(Mesh mesh, RenderConfig render_config);
+    void init_scene(RenderConfig render_config);
     void destroy();
     void loop();
 

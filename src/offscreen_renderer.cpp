@@ -127,7 +127,7 @@ void Renderer::destroy() {
     }
 }
 
-void Renderer::init_scene() {
+void Renderer::init_scene(RenderConfig render_config) {
     glViewport(0, 0, width, height);
 
     glEnable(GL_DEPTH_TEST);
@@ -141,11 +141,11 @@ void Renderer::init_scene() {
     // 设置正面的绕序，默认是 GL_CCW（逆时针）
     glFrontFace(GL_CCW);
 
-    glClearColor(0, 0, 0, 1.0f);
+    glClearColor(render_config.backgroundColor[0], render_config.backgroundColor[1], render_config.backgroundColor[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void Renderer::render_mesh(std::vector<std::vector<double>> vertices, std::vector<std::vector<uint32_t>> faces) {
+void Renderer::render_mesh(std::vector<std::vector<double>> vertices, std::vector<std::vector<uint32_t>> faces, RenderConfig render_config) {
     Eigen::MatrixX3d mVertices;
     mVertices.resize((long) vertices.size(), 3);
     for (int i = 0; i < vertices.size(); i++) {
@@ -192,7 +192,7 @@ void Renderer::set_width(int w) {
     width = w;
 }
 
-void Renderer::render_mesh(Mesh mesh, Shader shader) {
+void Renderer::render_mesh(Mesh mesh, Shader shader, RenderConfig render_config) {
     shader.Use();
 
     glm::mat4 rot(1);
@@ -219,12 +219,18 @@ void Renderer::render_mesh(Mesh mesh, Shader shader) {
     glUniform3f(glGetUniformLocation(shader.Program, "viewPos"), camera_translate[0], camera_translate[1],
                 camera_translate[2]);
 
-    glClearColor(0, 0, 0, 1.0f);
+    glUniform1i(glGetUniformLocation(shader.Program, "vertexColors"), render_config.vertexColors ? 1 : 0);
+    glUniform4f(glGetUniformLocation(shader.Program, "vertexColor"), render_config.vertexColor[0], render_config.vertexColor[1], render_config.vertexColor[2], 1.0f);
+    glUniform1f(glGetUniformLocation(shader.Program, "uAmbientStrength"), render_config.ambientStrength);
+    glUniform1f(glGetUniformLocation(shader.Program, "uDiffuseStrength"), render_config.diffuseStrength);
+    glUniform1f(glGetUniformLocation(shader.Program, "uSpecularStrength"), render_config.specularStrength);
+
+    glClearColor(render_config.backgroundColor[0], render_config.backgroundColor[1], render_config.backgroundColor[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     mesh.tri_draw(width, height);
 }
 
-void Renderer::render_mesh_normal(Mesh mesh) {
+void Renderer::render_mesh_normal(Mesh mesh, RenderConfig render_config) {
     Shader shader(1);
     shader.Use();
 
@@ -246,12 +252,12 @@ void Renderer::render_mesh_normal(Mesh mesh) {
     GLint projLoc = glGetUniformLocation(shader.Program, "projection");
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(proj));
 
-    glClearColor(0, 0, 0, 1.0f);
+    glClearColor(render_config.backgroundColor[0], render_config.backgroundColor[1], render_config.backgroundColor[2], 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     mesh.tri_draw(width, height);
 }
 
-void Renderer::render_mesh_depth(Mesh mesh) {
+void Renderer::render_mesh_depth(Mesh mesh, RenderConfig render_config) {
     Shader shader(2);
     shader.Use();
 
@@ -289,6 +295,8 @@ void Renderer::render_mesh_depth(Mesh mesh) {
     glUniform1f(minDepthLoc, minDepth);
     glUniform1f(maxDepthLoc, maxDepth);
 
+    glClearColor(render_config.backgroundColor[0], render_config.backgroundColor[1], render_config.backgroundColor[2], 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     mesh.tri_draw(width, height);
 }
 
