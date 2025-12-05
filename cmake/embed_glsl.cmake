@@ -79,5 +79,6 @@ endforeach()
 
 # 写 stamp 文件，让 CMake 知道这个 custom_command 的 OUTPUT 已经生成
 if(DEFINED STAMP_FILE)
-    file(WRITE "${STAMP_FILE}" "generated at ${CMAKE_TIME}")
+    string(TIMESTAMP NOW "%Y-%m-%d %H:%M:%S")
+    file(WRITE "${STAMP_FILE}" "generated at ${NOW}\n")
 endif()

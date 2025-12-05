@@ -204,8 +204,14 @@ void Renderer::render_mesh(Mesh mesh, Shader shader, RenderConfig render_config)
     trans = glm::translate(trans, glm::vec3(-camera_translate[0], -camera_translate[1], -camera_translate[2]));
     trans = rot * trans;
 
+    glm::mat4 model(1);
+    model = glm::rotate(model, glm::radians(render_config.R[0]), glm::vec3(1, 0, 0));
+    model = glm::rotate(model, glm::radians(render_config.R[1]), glm::vec3(0, 1, 0));
+    model = glm::rotate(model, glm::radians(render_config.R[2]), glm::vec3(0, 0, 1));
+    model = glm::translate(model, glm::vec3(render_config.T[0], render_config.T[1], render_config.T[2]));
+
     GLint modelLoc = glGetUniformLocation(shader.Program, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     GLint viewLoc = glGetUniformLocation(shader.Program, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(trans));
@@ -243,8 +249,14 @@ void Renderer::render_mesh_normal(Mesh mesh, RenderConfig render_config) {
     trans = glm::translate(trans, glm::vec3(-camera_translate[0], -camera_translate[1], -camera_translate[2]));
     trans = rot * trans;
 
+    glm::mat4 model(1);
+    model = glm::rotate(model, glm::radians(render_config.R[0]), glm::vec3(1, 0, 0));
+    model = glm::rotate(model, glm::radians(render_config.R[1]), glm::vec3(0, 1, 0));
+    model = glm::rotate(model, glm::radians(render_config.R[2]), glm::vec3(0, 0, 1));
+    model = glm::translate(model, glm::vec3(render_config.T[0], render_config.T[1], render_config.T[2]));
+
     GLint modelLoc = glGetUniformLocation(shader.Program, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     GLint viewLoc = glGetUniformLocation(shader.Program, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(trans));
@@ -270,8 +282,14 @@ void Renderer::render_mesh_depth(Mesh mesh, RenderConfig render_config) {
     trans = glm::translate(trans, glm::vec3(-camera_translate[0], -camera_translate[1], -camera_translate[2]));
     trans = rot * trans;
 
+    glm::mat4 model(1);
+    model = glm::rotate(model, glm::radians(render_config.R[0]), glm::vec3(1, 0, 0));
+    model = glm::rotate(model, glm::radians(render_config.R[1]), glm::vec3(0, 1, 0));
+    model = glm::rotate(model, glm::radians(render_config.R[2]), glm::vec3(0, 0, 1));
+    model = glm::translate(model, glm::vec3(render_config.T[0], render_config.T[1], render_config.T[2]));
+
     GLint modelLoc = glGetUniformLocation(shader.Program, "model");
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4(1)));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
     GLint viewLoc = glGetUniformLocation(shader.Program, "view");
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(trans));

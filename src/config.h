@@ -34,6 +34,8 @@ struct RenderConfig {
     float ambientStrength  = 0.3f;
     float diffuseStrength  = 0.5f;
     float specularStrength = 0.2f;
+    std::vector<float> R = {0.f, 0.f, 0.f};
+    std::vector<float> T = {0.f, 0.f, 0.f};
 };
 
 #endif //REVERSIBLE_RASTERIZER_CONFIG_H

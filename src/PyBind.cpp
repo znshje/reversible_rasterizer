@@ -27,7 +27,9 @@ PYBIND11_MODULE(librevras, m)
               .def_readwrite("backgroundColor", &RenderConfig::backgroundColor)
               .def_readwrite("ambientStrength", &RenderConfig::ambientStrength)
               .def_readwrite("diffuseStrength", &RenderConfig::diffuseStrength)
-              .def_readwrite("specularStrength", &RenderConfig::specularStrength);
+              .def_readwrite("specularStrength", &RenderConfig::specularStrength)
+              .def_readwrite("R", &RenderConfig::R)
+              .def_readwrite("T", &RenderConfig::T);
 
     py::class_<Mesh>(m, "Mesh")
             .def(py::init<std::vector<std::vector<double>>, std::vector<std::vector<double>>, std::vector<std::vector<uint32_t>>, std::vector<std::vector<float>>>())
