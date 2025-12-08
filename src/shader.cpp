@@ -94,7 +94,6 @@ Shader::Shader(int type) {
         glDeleteShader(fragment);
     } else {
         this->Program = glCreateProgram();
-        std::cout << "Using cached shader" << std::endl;
         glProgramBinary(this->Program, cachedPrograms[type].format, cachedPrograms[type].binary.data(), cachedPrograms[type].length);
     }
 }
