@@ -25,7 +25,7 @@ camera_config.zoom = 15.682097
 camera_config.near = 0.0001
 camera_config.far = 10000
 print(camera_config)
-mesh = trimesh.load('EJWZZZRF_lower.glb', process=False)
+mesh = trimesh.load('0AAQ6BO3_lower.glb', process=False)
 verts = []
 normals = []
 faces = []
@@ -44,6 +44,8 @@ faces = np.concatenate(faces, 0)
 instance = rr.init()
 rrmesh = rr.Mesh(verts, normals, faces)
 print(rrmesh)
+
+rr.setup_mesh(rrmesh, camera_config)
 
 id_map = np.array(rr.render_id_map(instance, rrmesh, camera_config, render_config))
 print(id_map.shape)
@@ -66,3 +68,9 @@ Image.fromarray(id_map.astype(np.uint8)).save('normal_map.png')
 id_map = np.array(rr.render_depth(instance, rrmesh, camera_config, render_config))
 print(id_map.shape)
 Image.fromarray(id_map.astype(np.uint8)).save('depth_map.png')
+
+id_map = np.array(rr.render_stacked(instance, rrmesh, camera_config, render_config, 6, [0.5, 0.5]))
+print(id_map.shape)
+Image.fromarray(id_map.astype(np.uint8)).save('stacked_map.png')
+
+rr.end_with_mesh(instance, rrmesh)

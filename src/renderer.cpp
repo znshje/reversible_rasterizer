@@ -15,10 +15,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// Guard to ensure glfwTerminate is only called once
+static bool g_glfw_initialized = false;
+
 int Renderer::init_gl_wnd_program() {
     /* Initialize the library */
     if (!glfwInit())
         return -1;
+    g_glfw_initialized = true;
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
@@ -41,8 +45,12 @@ int Renderer::init_gl_wnd_program() {
 void Renderer::destroy() {
     if (window) {
         glfwDestroyWindow(window);
+        window = nullptr;
     }
-    glfwTerminate();
+    if (g_glfw_initialized) {
+        glfwTerminate();
+        g_glfw_initialized = false;
+    }
 }
 
 void Renderer::init_scene(RenderConfig render_config) {
@@ -115,7 +123,7 @@ void Renderer::set_width(int w) {
     width = w;
 }
 
-void Renderer::render_mesh(Mesh mesh, Shader shader, RenderConfig render_config) {
+void Renderer::render_mesh(Mesh &mesh, Shader shader, RenderConfig render_config) {
     shader.Use();
 
     glm::mat4 rot(1);
@@ -153,7 +161,7 @@ void Renderer::render_mesh(Mesh mesh, Shader shader, RenderConfig render_config)
     glfwSwapBuffers(window);
 }
 
-void Renderer::render_mesh_normal(Mesh mesh, RenderConfig render_config) {
+void Renderer::render_mesh_normal(Mesh &mesh, RenderConfig render_config) {
     Shader shader(1);
     shader.Use();
 
@@ -181,7 +189,7 @@ void Renderer::render_mesh_normal(Mesh mesh, RenderConfig render_config) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::render_mesh_depth(Mesh mesh, RenderConfig render_config) {
+void Renderer::render_mesh_depth(Mesh &mesh, RenderConfig render_config) {
     Shader shader(2);
     shader.Use();
 
@@ -227,7 +235,7 @@ void Renderer::render_mesh_depth(Mesh mesh, RenderConfig render_config) {
 }
 
 // 读取像素的三角形 ID
-std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh mesh) {
+std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh &mesh) {
     std::vector<std::vector<int>> triangleIDs(height, std::vector<int>(width));
     GLint pixelData[width * height];
     glBindTexture(GL_TEXTURE_2D, mesh.idTexture);
@@ -242,10 +250,11 @@ std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh mesh) {
     return triangleIDs;
 }
 
-std::vector<std::vector<std::vector<int>>> Renderer::read_image(Mesh mesh) {
+std::vector<std::vector<std::vector<int>>> Renderer::read_image(Mesh &mesh) {
     std::vector<std::vector<std::vector<int>>> image(height, std::vector<std::vector<int>>(width, std::vector<int>(3)));
     GLubyte pixelData[width * height * 4];
     // 读取 RGB 数据
+    glBindTexture(GL_TEXTURE_2D, mesh.colorTexture);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixelData);
     for (int y = 0; y < height; ++y) {
         for (int x = 0; x < width; ++x) {

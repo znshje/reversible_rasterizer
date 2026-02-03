@@ -192,7 +192,7 @@ void Renderer::set_width(int w) {
     width = w;
 }
 
-void Renderer::render_mesh(Mesh mesh, Shader shader, RenderConfig render_config) {
+void Renderer::render_mesh(Mesh &mesh, Shader shader, RenderConfig render_config) {
     shader.Use();
 
     glm::mat4 rot(1);
@@ -236,7 +236,7 @@ void Renderer::render_mesh(Mesh mesh, Shader shader, RenderConfig render_config)
     mesh.tri_draw(width, height);
 }
 
-void Renderer::render_mesh_normal(Mesh mesh, RenderConfig render_config) {
+void Renderer::render_mesh_normal(Mesh &mesh, RenderConfig render_config) {
     Shader shader(1);
     shader.Use();
 
@@ -269,7 +269,7 @@ void Renderer::render_mesh_normal(Mesh mesh, RenderConfig render_config) {
     mesh.tri_draw(width, height);
 }
 
-void Renderer::render_mesh_depth(Mesh mesh, RenderConfig render_config) {
+void Renderer::render_mesh_depth(Mesh &mesh, RenderConfig render_config) {
     Shader shader(2);
     shader.Use();
 
@@ -319,7 +319,7 @@ void Renderer::render_mesh_depth(Mesh mesh, RenderConfig render_config) {
 }
 
 // 读取像素的三角形 ID
-std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh mesh) {
+std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh& mesh) {
     std::vector<std::vector<int>> triangleIDs(height, std::vector<int>(width));
     GLint pixelData[width * height];
     glBindTexture(GL_TEXTURE_2D, mesh.idTexture);
@@ -334,7 +334,7 @@ std::vector<std::vector<int>> Renderer::read_triangle_id(Mesh mesh) {
     return triangleIDs;
 }
 
-std::vector<std::vector<std::vector<int>>> Renderer::read_image(Mesh mesh) {
+std::vector<std::vector<std::vector<int>>> Renderer::read_image(Mesh& mesh) {
     std::vector<std::vector<std::vector<int>>> image(height, std::vector<std::vector<int>>(width, std::vector<int>(3)));
     GLubyte pixelData[width * height * 4];
     // 读取 RGB 数据

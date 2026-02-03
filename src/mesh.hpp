@@ -45,7 +45,7 @@ public:
     Eigen::MatrixX3d mNormals;
     Eigen::MatrixX4d mVertexColors;
     Eigen::MatrixX3i mFaces;
-    GLuint idTexture, colorTexture;
+    GLuint idTexture = 0, colorTexture = 0;
 
     Mesh(std::vector<std::vector<double>> v, std::vector<std::vector<double>> n, std::vector<std::vector<uint32_t>> f)
             : Mesh(std::move(v), std::move(n), std::move(f), {}) {}
@@ -79,6 +79,10 @@ public:
 
         clear_cache();
         apply();
+    }
+
+    ~Mesh() {
+        destroy();
     }
 
     void transform_center() {
@@ -187,29 +191,76 @@ public:
     void destroy() {
         if (VAO) {
             glDeleteVertexArrays(1, &VAO);
+            VAO = 0;
         }
         if (VBO) {
             glDeleteBuffers(1, &VBO);
+            VBO = 0;
         }
         if (EBO) {
             glDeleteBuffers(1, &EBO);
+            EBO = 0;
         }
         if (colorTexture) {
             glDeleteTextures(1, &colorTexture);
+            colorTexture = 0;
         }
         if (idTexture) {
             glDeleteTextures(1, &idTexture);
+            idTexture = 0;
         }
         if (FBO) {
             glDeleteFramebuffers(1, &FBO);
+            FBO = 0;
         }
         if (depthRBO) {
             glDeleteRenderbuffers(1, &depthRBO);
+            depthRBO = 0;
         }
     }
 
 private:
-    GLuint VAO, VBO, EBO, FBO, depthRBO;
+    GLuint VAO = 0, VBO = 0, EBO = 0, FBO = 0, depthRBO = 0;
+
+    // Disable copy to avoid double-free of GL resources
+    Mesh(const Mesh&) = delete;
+    Mesh& operator=(const Mesh&) = delete;
+
+    // Allow move semantics
+    Mesh(Mesh&& other) noexcept
+        : vertices(std::move(other.vertices)),
+          triVertices(std::move(other.triVertices)),
+          indices(std::move(other.indices)),
+          mVertices(std::move(other.mVertices)),
+          mNormals(std::move(other.mNormals)),
+          mVertexColors(std::move(other.mVertexColors)),
+          mFaces(std::move(other.mFaces)),
+          idTexture(other.idTexture), colorTexture(other.colorTexture),
+          VAO(other.VAO), VBO(other.VBO), EBO(other.EBO), FBO(other.FBO), depthRBO(other.depthRBO) {
+        other.idTexture = 0;
+        other.colorTexture = 0;
+        other.VAO = other.VBO = other.EBO = other.FBO = other.depthRBO = 0;
+    }
+
+    Mesh& operator=(Mesh&& other) noexcept {
+        if (this != &other) {
+            destroy();
+            vertices = std::move(other.vertices);
+            triVertices = std::move(other.triVertices);
+            indices = std::move(other.indices);
+            mVertices = std::move(other.mVertices);
+            mNormals = std::move(other.mNormals);
+            mVertexColors = std::move(other.mVertexColors);
+            mFaces = std::move(other.mFaces);
+            idTexture = other.idTexture;
+            colorTexture = other.colorTexture;
+            VAO = other.VAO; VBO = other.VBO; EBO = other.EBO; FBO = other.FBO; depthRBO = other.depthRBO;
+            other.idTexture = 0;
+            other.colorTexture = 0;
+            other.VAO = other.VBO = other.EBO = other.FBO = other.depthRBO = 0;
+        }
+        return *this;
+    }
 
     void clear_cache() {
         vertices.clear();

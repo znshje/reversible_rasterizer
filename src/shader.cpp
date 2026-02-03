@@ -32,7 +32,8 @@ std::string Shader::get_fragment_shader(int type) {
 }
 
 Shader::Shader(int type) {
-    if (!cachedPrograms[type].valid) {
+    ShaderProgram* cached = get_cached_programs();
+    if (!cached[type].valid) {
         std::string vertexCode = get_vertex_shader(type);
         std::string fragmentCode = get_fragment_shader(type);
 
@@ -84,17 +85,17 @@ Shader::Shader(int type) {
         GLenum binaryFormat = 0;
         glGetProgramBinary(this->Program, binaryLength, NULL, &binaryFormat, binary.data());
 
-        cachedPrograms[type].binary = binary;
-        cachedPrograms[type].length = binaryLength;
-        cachedPrograms[type].format = binaryFormat;
-        cachedPrograms[type].valid = true;
+        cached[type].binary = binary;
+        cached[type].length = binaryLength;
+        cached[type].format = binaryFormat;
+        cached[type].valid = true;
 
         // 删除着色器，它们已经链接到我们的程序中了，已经不再需要了
         glDeleteShader(vertex);
         glDeleteShader(fragment);
     } else {
         this->Program = glCreateProgram();
-        glProgramBinary(this->Program, cachedPrograms[type].format, cachedPrograms[type].binary.data(), cachedPrograms[type].length);
+        glProgramBinary(this->Program, cached[type].format, cached[type].binary.data(), cached[type].length);
     }
 }
 

@@ -10,7 +10,7 @@ ModelLoader::ModelLoader(const std::string &model_path) : model_path(model_path)
 }
 
 ModelLoader::~ModelLoader() {
-    delete g_scene;
+    // delete g_scene;
 }
 
 std::vector<std::vector<uint32_t>> ModelLoader::get_faces() {

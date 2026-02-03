@@ -31,7 +31,10 @@ public:
     Shader(const GLchar* vertexPath, const GLchar* fragmentPath);
     // 使用程序
     void Use();
-    inline static ShaderProgram* cachedPrograms = new ShaderProgram[3];
+    static ShaderProgram* get_cached_programs() {
+        static ShaderProgram cached[3];
+        return cached;
+    }
 private:
     std::string get_vertex_shader(int type);
     std::string get_fragment_shader(int type);
